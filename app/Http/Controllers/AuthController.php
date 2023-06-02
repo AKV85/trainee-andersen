@@ -55,7 +55,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validated();
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthControllerLoginTest extends TestCase
@@ -16,16 +17,17 @@ class AuthControllerLoginTest extends TestCase
     public function testLogin()
     {
         // Create a user for testing
+        $plainPassword = 'password123';
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => bcrypt('password123'),
+            'password' => Hash::make($plainPassword),
         ]);
 
 
         // Prepare login data
         $data = [
-            'email' => 'test@example.com',
-            'password' => 'password123',
+            'email' => $user->email,
+            'password' => $plainPassword,
         ];
 
         // Send a POST request to the login endpoint

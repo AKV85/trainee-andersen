@@ -24,8 +24,8 @@ class AuthControllerLoginFailTest extends TestCase
 
         // Prepare login data
         $data = [
-            'email' => 'test@example.com',
-            'password' => 'password12',
+            'email' => $user->email,
+            'password' => 'passwordWrong',
         ];
 
         // Send a POST request to the login endpoint
