@@ -3,14 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
+use App\Services\UserService;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
+    protected UserService $userService;
+
+    /**
+     * AuthController constructor.
+     *
+     * @param UserService $userService The user service instance.
+     */
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     /**
      * Register a new user.
      *
@@ -19,10 +32,9 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-
         try {
-            // Create a new user
-            $user = User::create($request->validated());
+            // Create a new user using the userService
+            $user = $this->userService->store($request->validated());
 
             // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
