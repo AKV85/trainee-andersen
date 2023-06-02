@@ -37,7 +37,6 @@ class AuthControllerTest extends TestCase
 
         // Assert that the user is created in the database
         $this->assertDatabaseHas('users', ['email' => $data['email']]);
-        dump($data);
         Log::info($data);
     }
 }
