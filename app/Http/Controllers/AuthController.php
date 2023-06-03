@@ -4,26 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Mail\ResetPasswordEmail;
+use App\Models\ResetPassword;
+use App\Models\User;
+use App\Services\PasswordService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
     protected UserService $userService;
+    protected PasswordService $passwordService;
 
     /**
      * AuthController constructor.
      *
      * @param UserService $userService The user service instance.
+     * @param PasswordService $passwordService The password service instance.
      */
-
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, PasswordService $passwordService)
     {
         $this->userService = $userService;
+        $this->passwordService = $passwordService;
     }
 
     /**
@@ -53,21 +62,96 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Log in the user.
+     *
+     * @param LoginRequest $request The login request.
+     * @return JsonResponse The JSON response.
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-
-        if (Auth::attempt($credentials)) {
+        // Attempt to authenticate the user with the provided credentials
+        if (Auth::attempt($credentials, true)) {
+            // If authentication is successful, retrieve the authenticated user
             $user = Auth::user();
+            // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
-
+            // Log successful login
             Log::info('User logged in successfully: ' . $request->email);
-
+            // Return a success response with the token and HTTP status code 200 (HTTP_OK)
             return response()->json(['token' => $token], Response::HTTP_OK);
         }
-
+        // If authentication fails, return an error response with HTTP status code 401 (HTTP_UNAUTHORIZED)
         return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
     }
 
+    /**
+     * Reset user password.
+     *
+     * @param ResetPasswordRequest $request The reset password request.
+     * @return JsonResponse The JSON response.
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
 
+        // Get the user by email
+        $user = User::where('email', $request->input('email'))->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            // Create a reset password record
+            $resetPassword = $this->passwordService->createResetPassword($user);
+
+            // Send email to the user with the reset token
+            Mail::to($user->email)->send(new ResetPasswordEmail($resetPassword));
+
+            // Return a response indicating the email has been sent
+            return response()->json([
+                'message' => 'Reset password email sent'
+            ], Response::HTTP_OK);
+        } catch (Exception $e) {
+            Log::error('Error sending reset password email: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to send reset password email'],
+                Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Update user password.
+     *
+     * @param UpdatePasswordRequest $request The update password request.
+     * @return JsonResponse The JSON response.
+     */
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|exists:reset_password,token',
+            'password' => 'required|min:8',
+        ]);
+
+        $resetPassword = ResetPassword::where('token', $request->token)->first();
+
+        if (!$resetPassword || !$this->passwordService->isTokenValid($resetPassword)) {
+            return response()->json(['message' => 'Invalid token, please reset password again'],
+                Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $user = $resetPassword->user;
+
+            $resetPassword->delete();
+
+            return response()->json(['message' => 'Password updated'], Response::HTTP_OK);
+        } catch (Exception $e) {
+            Log::error('Error updating password: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update password'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
