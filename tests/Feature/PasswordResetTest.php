@@ -12,7 +12,11 @@ class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
-
+    /**
+     * Test if the reset password email is sent successfully.
+     *
+     * @return void
+     */
     public function testResetPasswordEmailSentSuccessfully()
     {
 // Create a test user
@@ -37,7 +41,11 @@ class PasswordResetTest extends TestCase
             'user_id' => $user->id,
         ]);
     }
-
+    /**
+     * Test if the reset password email is sent successfully.
+     *
+     * @return void
+     */
     public function testResetPasswordUserNotFound()
     {
         // Make a request to reset the password for a non-existent user
