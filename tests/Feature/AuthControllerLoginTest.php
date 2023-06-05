@@ -16,7 +16,6 @@ class AuthControllerLoginTest extends TestCase
 
     public function testLogin()
     {
-        // Create a user for testing
         $plainPassword = 'password123';
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -24,19 +23,15 @@ class AuthControllerLoginTest extends TestCase
         ]);
 
 
-        // Prepare login data
         $data = [
             'email' => $user->email,
             'password' => $plainPassword,
         ];
 
-        // Send a POST request to the login endpoint
         $response = $this->json('POST', '/api/auth/login', $data);
 
-        // Assert that the response has a successful status code
         $response->assertStatus(Response::HTTP_OK);
 
-        // Assert that the response contains an access token
         $response->assertJsonStructure([
             'token',
         ]);

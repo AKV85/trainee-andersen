@@ -50,7 +50,6 @@ class AuthController extends Controller
             // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
 
-            // Log successful registration
             Log::info('User registered successfully: ' . $user->email);
 
             // Return a success response with the token and HTTP status code 201 (HTTP_CREATED)
@@ -75,7 +74,6 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, true)) {
             // If authentication is successful, retrieve the authenticated user
             $user = Auth::user();
-            // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
             Log::info('User logged in successfully: ' . $request->email);
             return response()->json(['token' => $token], Response::HTTP_OK);
@@ -103,10 +101,8 @@ class AuthController extends Controller
         try {
             $resetPassword = $this->passwordService->createResetPassword($user);
 
-            // Send email to the user with the reset token
             Mail::to($user->email)->send(new ResetPasswordEmail($resetPassword->token));
 
-            // Return a response indicating the email has been sent
             return response()->json([
                 'message' => 'Reset password email sent'
             ], Response::HTTP_OK);
