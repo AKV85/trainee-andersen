@@ -52,11 +52,9 @@ class AuthController extends Controller
 
             Log::info('User registered successfully: ' . $user->email);
 
-            // Return a success response with the token and HTTP status code 201 (HTTP_CREATED)
             return response()->json(['token' => $token], Response::HTTP_CREATED);
         } catch (Exception $e) {
             Log::error('Error registering user: ' . $e->getMessage());
-            // Return an error response with the message 'Failed to register user' and HTTP status code 422 (HTTP_UNPROCESSABLE_ENTITY)
             return response()->json(['error' => 'Failed to register user'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
