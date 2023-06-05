@@ -122,10 +122,6 @@ class AuthController extends Controller
 
         try {
             $user = $resetPassword->user;
-
-            if (empty($request->password)) {
-                return response()->json(['message' => 'New password is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
             $user->password = $request->password;
             $user->save();
             $resetPassword->delete();
