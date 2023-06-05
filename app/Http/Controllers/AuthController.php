@@ -87,9 +87,6 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
         $user = User::where('email', $request->input('email'))->first();
 
         if (!$user) {
@@ -107,7 +104,7 @@ class AuthController extends Controller
         } catch (Exception $e) {
             Log::error('Error sending reset password email: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to send reset password email'],
-                Response::HTTP_INTERNAL_SERVER_ERROR);
+                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -124,18 +121,23 @@ class AuthController extends Controller
 
         if (!$resetPassword || !$this->passwordService->isTokenValid($resetPassword)) {
             return response()->json(['message' => 'Invalid token, please reset password again'],
-                Response::HTTP_BAD_REQUEST);
+                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         try {
             $user = $resetPassword->user;
 
+            if (empty($request->password)) {
+                return response()->json(['message' => 'New password is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            $user->password = $request->password;
+            $user->save();
             $resetPassword->delete();
 
             return response()->json(['message' => 'Password updated'], Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Error updating password: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update password'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['error' => 'Failed to update password'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 }

@@ -25,7 +25,7 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'token' => 'required|exists:reset_password,token',
-            'password' => 'required|min:8',
+            'password' => 'required|min:6',
         ];
     }
 }
