@@ -44,10 +44,8 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
-            // Create a new user using the userService
             $user = $this->userService->store($request->validated());
 
-            // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
 
             Log::info('User registered successfully: ' . $user->email);
@@ -68,9 +66,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-        // Attempt to authenticate the user with the provided credentials
         if (Auth::attempt($credentials, true)) {
-            // If authentication is successful, retrieve the authenticated user
             $user = Auth::user();
             $token = $user->createToken('authToken')->accessToken;
             Log::info('User logged in successfully: ' . $request->email);
