@@ -5,7 +5,7 @@
     <x-mail::panel>
         Click the button below to reset your password:
     </x-mail::panel>
-    <x-mail::button :url="$url" color="success">
+    <x-mail::button :url="route('password.reset', ['token' => $token])" color="success">
         Reset password
     </x-mail::button>
 

@@ -77,12 +77,9 @@ class AuthController extends Controller
             $user = Auth::user();
             // Generate an access token using Laravel Passport
             $token = $user->createToken('authToken')->accessToken;
-            // Log successful login
             Log::info('User logged in successfully: ' . $request->email);
-            // Return a success response with the token and HTTP status code 200 (HTTP_OK)
             return response()->json(['token' => $token], Response::HTTP_OK);
         }
-        // If authentication fails, return an error response with HTTP status code 401 (HTTP_UNAUTHORIZED)
         return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
     }
 
@@ -97,8 +94,6 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
         ]);
-
-        // Get the user by email
         $user = User::where('email', $request->input('email'))->first();
 
         if (!$user) {
@@ -106,11 +101,10 @@ class AuthController extends Controller
         }
 
         try {
-            // Create a reset password record
             $resetPassword = $this->passwordService->createResetPassword($user);
 
             // Send email to the user with the reset token
-            Mail::to($user->email)->send(new ResetPasswordEmail($resetPassword));
+            Mail::to($user->email)->send(new ResetPasswordEmail($resetPassword->token));
 
             // Return a response indicating the email has been sent
             return response()->json([
@@ -131,10 +125,6 @@ class AuthController extends Controller
      */
     public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'token' => 'required|exists:reset_password,token',
-            'password' => 'required|min:8',
-        ]);
 
         $resetPassword = ResetPassword::where('token', $request->token)->first();
 

@@ -47,7 +47,7 @@ class ResetPasswordEmail extends Mailable
         return new Content(
             markdown: 'emails.reset_password',
             with: [
-                'url' => $this->token,
+                'token' => $this->token,
             ],
         );
     }
