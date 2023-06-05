@@ -19,23 +19,18 @@ class AuthControllerTest extends TestCase
      */
     public function testRegister()
     {
-        // Prepare data for the registration request
         $data = [
             'email' => $this->faker->safeEmail,
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ];
 
-        // Send the registration request
         $response = $this->json('POST', '/api/auth/register', $data);
 
-        // Assert that the response has a 201 status code
         $response->assertStatus(201);
 
-        // Assert the JSON structure of the response
         $response->assertJsonStructure(['token']);
 
-        // Assert that the user is created in the database
         $this->assertDatabaseHas('users', ['email' => $data['email']]);
         Log::info($data);
     }
