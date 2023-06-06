@@ -21,4 +21,19 @@ class UserService
         // Create a new user using the provided data
         return User::create($data);
     }
+
+    public function update(User $user, array $data)
+    {
+        $user->fill($data);
+
+        if (isset($data['password'])) {
+            $user->password = $data['password'];
+        }
+
+        if ($user->isDirty()) {
+            $user->save();
+        }
+
+        return $user;
+    }
 }
