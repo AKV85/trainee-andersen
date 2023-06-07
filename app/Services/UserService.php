@@ -26,13 +26,7 @@ class UserService
     {
         $user->fill($data);
 
-        if (isset($data['password'])) {
-            $user->password = $data['password'];
-        }
-
-        if ($user->isDirty()) {
-            $user->save();
-        }
+        $user->save();
 
         return $user;
     }

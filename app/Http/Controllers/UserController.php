@@ -14,32 +14,12 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function getUsers(): JsonResponse
+    public function update(UserUpdateRequest $request, User $user): JsonResponse
     {
-        $users = User::all();
+        $user = $request->user();
 
-        return response()->json([
-            'users' => $users,
-            'message' => 'Users found',
-            'status' => 1
-        ]);
+        $user = $this->userService->update($user, $request->validated());
+
+        return response()->json($user);
     }
-
-
-    public function update(UserUpdateRequest $request)
-    {
-        $user = auth()->user();
-        $this->authorize('update', $user);
-
-        $data = $request->only(['name', 'email']);
-
-        $user = $this->userService->update($user, $data);
-
-        return response()->json([
-            'message' => 'User updated successfully',
-            'user' => $user
-        ]);
-    }
-
-
 }
