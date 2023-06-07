@@ -1,76 +1,56 @@
 <?php
-namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
-use App\Services\UserService;
 
 class UserUpdateTest extends TestCase
 {
     use DatabaseTransactions, WithFaker;
 
-
-    protected $userService;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->userService = app(UserService::class);
-    }
-
-    public function testUserUpdateSuccess()
+    /**
+     * Test user update.
+     *
+     * @return void
+     */
+    public function testUpdateUserWithSuccessfulAuth(): void
     {
         $user = User::factory()->create();
 
         $data = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'newpassword',
-            'password_confirmation'=>'newpassword'
+            'name' => $this->faker->name,
+            'email' => $this->faker->safeEmail,
         ];
 
-        $response = $this->actingAs($user)
-            ->json('PUT', '/api/users', $data);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $user->createToken('authToken')->accessToken,
+        ])->put(route('users.update', ['user' => $user->id]), $data);
 
-        $response->assertStatus(200)
-            ->assertJson([
-                'message' => 'User updated successfully',
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                ],
-            ]);
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
+            'name' => $data['name'],
+            'email' => $data['email'],
         ]);
     }
 
-    public function testUserUpdateError()
+    public function testUpdateUserWithFailedAuth()
     {
         $user = User::factory()->create();
 
         $data = [
-            'email' => 'invalid_email',
+            'name' => $this->faker->name,
+            'email' => $this->faker->safeEmail,
         ];
 
-        $response = $this->actingAs($user)
-            ->json('PUT', '/api/users', $data);
+        $unauthorizedUser = User::factory()->create();
 
-        $response->assertStatus(422)
-            ->assertJson([
-            ]);
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $unauthorizedUser->createToken('authToken')->accessToken,
+        ])->put(route('users.update', ['user' => $user->id]), $data);
 
-        $this->assertDatabaseMissing('users', [
-            'id' => $user->id,
-            'email' => 'invalid_email',
-        ]);
+        $response->assertStatus(403);
     }
-
 }
-

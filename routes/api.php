@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::middleware('auth:api')->group(function () {
-    Route::put('/users/{user}', [UserController::class, 'update']);
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

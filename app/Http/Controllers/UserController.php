@@ -16,10 +16,10 @@ class UserController extends Controller
 
     public function update(UserUpdateRequest $request, User $user): JsonResponse
     {
-        $user = $request->user();
+        $loggedUser = $request->user();
 
-        $user = $this->userService->update($user, $request->validated());
+        $updatedUser = $this->userService->update($loggedUser, $request->validated());
 
-        return response()->json($user);
+        return response()->json($updatedUser);
     }
 }
