@@ -13,7 +13,6 @@ use App\Services\PasswordService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,7 +49,7 @@ class AuthController extends Controller
 
             Log::info('User registered successfully: ' . $user->email);
 
-            return response()->json(['token' => $token], Response::HTTP_CREATED);
+            return response()->json(['authToken' => $token], Response::HTTP_CREATED);
         } catch (Exception $e) {
             Log::error('Error registering user: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to register user'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -66,11 +65,12 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-        if (Auth::attempt($credentials, true)) {
-            $user = Auth::user();
+        $user = User::where('email', $credentials['email'])->first();
+
+        if ($user && password_verify($credentials['password'], $user->password)) {
             $token = $user->createToken('authToken')->accessToken;
             Log::info('User logged in successfully: ' . $request->email);
-            return response()->json(['token' => $token], Response::HTTP_OK);
+            return response()->json(['authToken' => $token], Response::HTTP_OK);
         }
         return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
     }

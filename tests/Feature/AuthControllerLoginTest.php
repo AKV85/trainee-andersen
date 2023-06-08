@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
@@ -11,7 +12,7 @@ use Tests\TestCase;
 
 class AuthControllerLoginTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use WithFaker;
 
     public function testLogin()
@@ -33,7 +34,7 @@ class AuthControllerLoginTest extends TestCase
         $response->assertStatus(Response::HTTP_OK);
 
         $response->assertJsonStructure([
-            'token',
+            'authToken',
         ]);
     }
 }

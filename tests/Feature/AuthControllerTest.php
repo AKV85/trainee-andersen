@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Log;
@@ -9,7 +10,7 @@ use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use WithFaker;
 
     /**
@@ -29,7 +30,7 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(201);
 
-        $response->assertJsonStructure(['token']);
+        $response->assertJsonStructure(['authToken']);
 
         $this->assertDatabaseHas('users', ['email' => $data['email']]);
         Log::info($data);
