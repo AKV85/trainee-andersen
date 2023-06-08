@@ -10,4 +10,9 @@ class UserPolicy
     {
         return $user->id === $model->id;
     }
+
+    public function show(User $user, User $model)
+    {
+        return $user->id === $model->id;
+    }
 }
