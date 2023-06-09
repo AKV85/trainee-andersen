@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserIndexRequest;
+use App\Http\Requests\UserShowRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -18,7 +20,7 @@ class UserController extends Controller
     }
 
 
-    public function index(): JsonResponse
+    public function index(UserIndexRequest $request, User $user): JsonResponse
     {
         $users = User::all();
         $emails = $users->pluck('email')->toArray();
@@ -28,11 +30,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user)
+    public function show(UserShowRequest $request, User $user)
     {
-        $this->authorize('show', $user);
-
-        return new UserResource($user);
+        return response()->json(new UserResource($user));
     }
 
     public function update(UserUpdateRequest $request, User $user): JsonResponse

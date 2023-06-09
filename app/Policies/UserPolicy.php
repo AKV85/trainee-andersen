@@ -6,6 +6,10 @@ use App\Models\User;
 
 class UserPolicy
 {
+    public function viewAny(User $user)
+    {
+        return true;
+    }
     public function update(User $user, User $model)
     {
         return $user->id === $model->id;
