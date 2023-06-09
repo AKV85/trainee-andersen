@@ -9,18 +9,15 @@ use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends Controller
 {
     protected UserService $userService;
-    protected $pdf;
 
-    public function __construct(UserService $userService, PDF $pdf)
+    public function __construct(UserService $userService)
     {
         $this->userService = $userService;
-        $this->pdf = $pdf;
     }
 
     public function index(UserIndexRequest $request, User $user): JsonResponse
@@ -49,7 +46,6 @@ class UserController extends Controller
 
     public function destroy(DeleteUserRequest $request, User $user)
     {
-        $request->authorize();
         $this->userService->destroy($user);
 
         return response()->json(['message' => 'Account deleted successfully']);
