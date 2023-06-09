@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\AccountDeletionNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UserService
 {
@@ -29,5 +31,21 @@ class UserService
         $user->save();
 
         return $user;
+    }
+
+    public function destroy(User $user)
+    {
+        $user->status = User::INACTIVE;
+        $user->save();
+
+        $data = ['user' => $user];
+        $pdf = PDF::loadView('emails.account_deletion', $data);
+        $dompdf = $pdf->getDomPDF();
+
+        $filename = "{$user->name}_delete.pdf";
+        $path = storage_path("app/pdf/{$filename}");
+        $pdf->save($path);
+
+        $user->notify(new AccountDeletionNotification($dompdf));
     }
 }
