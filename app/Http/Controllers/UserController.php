@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\UserIndexRequest;
 use App\Http\Requests\UserShowRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -18,7 +19,6 @@ class UserController extends Controller
     {
         $this->userService = $userService;
     }
-
 
     public function index(UserIndexRequest $request, User $user): JsonResponse
     {
@@ -43,4 +43,12 @@ class UserController extends Controller
 
         return response()->json($updatedUser);
     }
+
+    public function destroy(DeleteUserRequest $request, User $user)
+    {
+        $this->userService->destroy($user);
+
+        return response()->json(['message' => 'Account deleted successfully']);
+    }
 }
+
